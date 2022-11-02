@@ -1,0 +1,6 @@
+.idea
+bin/
+*.mk
+vendor/
+config.yaml
+internal/config/

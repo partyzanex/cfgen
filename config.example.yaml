@@ -1,0 +1,27 @@
+app:
+  name: "simple-app" # env prefix: SIMPLE_SERVICE
+  desc: "Simple service for example"
+  env:
+    - test
+    - local
+    - stg
+    - prod
+
+flags:
+  string:
+    flag: string-flag-name
+    aliases:
+      - string-flag
+      - str
+    desc: String flag example
+    value: "string-value"
+  int:
+    aliases:
+      - i
+      - integer
+    desc: "Integer flag example"
+    value:
+      test: 1
+      local: 2
+      stg: 30
+      prod: -400
