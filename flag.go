@@ -92,42 +92,56 @@ func (flag *Flag) ValueSetMethodName() string {
 	}
 }
 
-func (flag *Flag) CLIFlagType() string {
-	return flag.ValueType() + "Flag"
-}
+const (
+	enumValueTypeString       = "String"
+	enumValueTypeInt          = "Int"
+	enumValueTypeInt64        = "Int64"
+	enumValueTypeUint         = "Uint"
+	enumValueTypeUint64       = "Uint64"
+	enumValueTypeFloat64      = "Float64"
+	enumValueTypeBool         = "Bool"
+	enumValueTypeTimestamp    = "Timestamp"
+	enumValueTypeDuration     = "Duration"
+	enumValueTypeStringSlice  = "StringSlice"
+	enumValueTypeIntSlice     = "IntSlice"
+	enumValueTypeInt64Slice   = "Int64Slice"
+	enumValueTypeUintSlice    = "UintSlice"
+	enumValueTypeUint64Slice  = "Uint64Slice"
+	enumValueTypeFloat64Slice = "Float64Slice"
+)
 
 func (flag *Flag) ValueType() string {
 	switch flag.Type {
 	case FlagTypeString, FlagTypeEnum:
-		return "String"
+		return enumValueTypeString
 	case FlagTypeInt:
-		return "Int"
+		return enumValueTypeInt
 	case FlagTypeInt64:
-		return "Int64"
+		return enumValueTypeInt64
 	case FlagTypeUInt:
-		return "Uint"
+		return enumValueTypeUint
 	case FlagTypeUInt64:
-		return "Uint64"
+		return enumValueTypeUint64
 	case FlagTypeFloat64:
-		return "Float64"
+		return enumValueTypeFloat64
 	case FlagTypeBool:
-		return "Bool"
+		return enumValueTypeBool
 	case FlagTypeTimestamp:
-		return "Timestamp"
+		return enumValueTypeTimestamp
 	case FlagTypeDuration:
-		return "Duration"
+		return enumValueTypeDuration
 	case FlagTypeStringSlice:
-		return "StringSlice"
+		return enumValueTypeStringSlice
 	case FlagTypeIntSlice:
-		return "IntSlice"
+		return enumValueTypeIntSlice
 	case FlagTypeInt64Slice:
-		return "Int64Slice"
+		return enumValueTypeInt64Slice
 	case FlagTypeUIntSlice:
-		return "UIntSlice"
+		return enumValueTypeUintSlice
 	case FlagTypeUInt64Slice:
-		return "UInt64Slice"
+		return enumValueTypeUint64Slice
 	case FlagTypeFloat64Slice:
-		return "Float64Slice"
+		return enumValueTypeFloat64Slice
 	default:
 		return ""
 	}
@@ -170,7 +184,7 @@ func (flag *Flag) EnvVarsField(appName string) string {
 	case string:
 		names = append(names, strconv.Quote(strcase.ToScreamingSnake(env)))
 	case bool:
-		return "nil"
+		return nilStr
 	case nil:
 		// nothing
 	default:
@@ -180,39 +194,81 @@ func (flag *Flag) EnvVarsField(appName string) string {
 	return fmt.Sprintf("[]string{%s}", strings.Join(names, ", "))
 }
 
+const (
+	enumGoTypeString       = "string"
+	enumGoTypeInt          = "int"
+	enumGoTypeInt64        = "int64"
+	enumGoTypeUint         = "uint"
+	enumGoTypeUint64       = "uint64"
+	enumGoTypeFloat64      = "float64"
+	enumGoTypeBool         = "bool"
+	enumGoTypeDuration     = "time.Duration"
+	enumGoTypeStringSlice  = "[]string"
+	enumGoTypeIntSlice     = "[]int"
+	enumGoTypeInt64Slice   = "[]int64"
+	enumGoTypeUintSlice    = "[]uint"
+	enumGoTypeUint64Slice  = "[]uint64"
+	enumGoTypeFloat64Slice = "[]float64"
+)
+
 func (flag *Flag) GoType() string {
 	switch flag.Type {
 	case FlagTypeString, FlagTypeEnum:
-		return "string"
+		return enumGoTypeString
 	case FlagTypeInt:
-		return "int"
+		return enumGoTypeInt
 	case FlagTypeInt64:
-		return "int64"
+		return enumGoTypeInt64
 	case FlagTypeUInt:
-		return "uint"
+		return enumGoTypeUint
 	case FlagTypeUInt64:
-		return "uint64"
+		return enumGoTypeUint64
 	case FlagTypeFloat64:
-		return "float64"
+		return enumGoTypeFloat64
 	case FlagTypeBool:
-		return "bool"
+		return enumGoTypeBool
 	case FlagTypeDuration:
-		return "time.Duration"
+		return enumGoTypeDuration
 	case FlagTypeStringSlice:
-		return "[]string"
+		return enumGoTypeStringSlice
 	case FlagTypeIntSlice:
-		return "[]int"
+		return enumGoTypeIntSlice
 	case FlagTypeInt64Slice:
-		return "[]int64"
+		return enumGoTypeInt64Slice
 	case FlagTypeUIntSlice:
-		return "[]uint"
+		return enumGoTypeUintSlice
 	case FlagTypeUInt64Slice:
-		return "[]uint64"
+		return enumGoTypeUint64Slice
 	case FlagTypeFloat64Slice:
-		return "[]float64"
+		return enumGoTypeFloat64Slice
 	default:
-		panic(any("unsupported flag type"))
+		panic(flag.errorf("unsupported flag type %q", flag.Type))
 	}
+}
+
+const nilStr = "nil"
+
+func (flag *Flag) AliasesField() string {
+	if len(flag.Aliases) == 0 {
+		return nilStr
+	}
+
+	return fmt.Sprintf(`[]string{"%s"}`, strings.Join(flag.Aliases, `", "`))
+}
+
+func (flag *Flag) DescField() string {
+	if flag.Type == FlagTypeEnum {
+
+		if flag.Desc != "" {
+			return fmt.Sprintf("%s, (variants: %s)",
+				flag.Desc, strings.Join(flag.Enum, ", "),
+			)
+		}
+
+		return fmt.Sprintf("variants: %s", strings.Join(flag.Enum, ", "))
+	}
+
+	return flag.Desc
 }
 
 func (flag *Flag) sliceArg(env string) string {
@@ -228,6 +284,8 @@ func (flag *Flag) sliceArg(env string) string {
 		}
 	case []interface{}:
 		ss = v
+	case nil:
+		// nothing
 	default:
 		panic(flag.errorf("sliceArg: unsupported type %T", flag.Value))
 	}
@@ -249,9 +307,13 @@ func (flag *Flag) sliceArg(env string) string {
 		case float64:
 			n = strconv.FormatFloat(v, 'f', -1, 64)
 		case string:
-			n = `"` + s.(string) + `"`
+			n = v
 		default:
 			panic(flag.errorf("sliceArg: unsupported value type %T", s))
+		}
+
+		if flag.Type == FlagTypeStringSlice {
+			n = strconv.Quote(n)
 		}
 
 		r[i] = n
@@ -281,6 +343,8 @@ func (flag *Flag) durationArg(env string) string {
 
 			d = dur.Nanoseconds()
 		}
+	case nil:
+		// nothing
 	default:
 		panic(flag.errorf("durationArg: unsupported type %T", flag.Value))
 	}
@@ -299,6 +363,8 @@ func (flag *Flag) boolArg(env string) string {
 		if ok {
 			b = a
 		}
+	case nil:
+		// nothing
 	default:
 		panic(any(fmt.Sprintf("unsupported type %T", flag.Value)))
 	}
@@ -317,8 +383,10 @@ func (flag *Flag) floatArg(env string) string {
 		if ok {
 			f = d
 		}
+	case nil:
+		// nothing
 	default:
-		panic(flag.errorf("floatArg: unsupported type %T"))
+		panic(flag.errorf("floatArg: unsupported type %T", flag.Value))
 	}
 
 	return strconv.FormatFloat(f, 'f', -1, 64)
@@ -337,6 +405,8 @@ func (flag *Flag) enumArg(env string) string {
 		} else {
 			panic(flag.errorf("undefined value for env %q", env))
 		}
+	case nil:
+		// nothing
 	default:
 		panic(flag.errorf("unsupported type %T", flag.Value))
 	}
@@ -366,6 +436,8 @@ func (flag *Flag) intArg(env string) string {
 				panic(flag.errorf("toInt64: %s", err))
 			}
 		}
+	case nil:
+		// nothing
 	default:
 		panic(flag.errorf("intArg: unsupported type %T", flag.Value))
 	}
@@ -380,19 +452,32 @@ func (flag *Flag) timestampArg(env string) string {
 	)
 
 	switch v := flag.Value.(type) {
+	case time.Time:
+		dt = v
 	case string:
 		dt, err = time.Parse(time.RFC3339, v)
 		if err != nil {
 			panic(flag.errorf("timestampArg: %s, value: %v", err, v))
 		}
 	case map[string]interface{}:
-		s, ok := v[env].(string)
-		if ok {
-			dt, err = time.Parse(time.RFC3339, s)
+		s, ok := v[env]
+		if !ok {
+			break
+		}
+
+		switch d := s.(type) {
+		case string:
+			dt, err = time.Parse(time.RFC3339, d)
 			if err != nil {
 				panic(flag.errorf("timestampArg: %s", err))
 			}
+		case time.Time:
+			dt = d
+		case nil:
+			// nothing
 		}
+	case nil:
+		// nothing
 	default:
 		panic(flag.errorf("timestampArg: unsupported type %T", flag.Value))
 	}
@@ -417,6 +502,8 @@ func (flag *Flag) stringArg(env string) string {
 		if ok {
 			arg = s
 		}
+	case nil:
+		// nothing
 	default:
 		panic(flag.errorf("stringArg: unsupported value type %T", flag.Value))
 	}

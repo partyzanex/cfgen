@@ -17,6 +17,7 @@ const (
 
 func main() {
 	app := new(cli.App)
+	app.Usage = "YAML to Go cli tool"
 	app.Action = action
 	app.Flags = []cli.Flag{
 		&cli.PathFlag{

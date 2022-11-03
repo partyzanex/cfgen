@@ -10,18 +10,108 @@ app:
 flags:
   string:
     flag: string-flag-name
+    type: string
     aliases:
       - string-flag
       - str
     desc: String flag example
     value: "string-value"
   int:
+    type: int
     aliases:
       - i
       - integer
     desc: "Integer flag example"
+    required: true
     value:
       test: 1
       local: 2
       stg: 30
       prod: -400
+  int64-example-default:
+    type: int64
+    required: true
+    env: [ i64, int64-flag ]
+  uint-nil:
+    flag: uint
+    type: uint
+    desc: "Uint example empty flag"
+    value:
+      test: 10
+      local: 11
+  uint64-value-no-env:
+    type: uint64
+    env: false
+    value: 100
+  float64-default:
+    type: float64
+    aliases:
+      - f
+    env: FLOAT_DEFAULT
+  duration:
+    type: duration
+    desc: "timeouts"
+    value:
+      test: 100ms
+      local: 500ms
+      stg: 10m
+      prod: 1h
+  enum-example:
+    flag: enum-list
+    type: enum
+    enum:
+      - enum-1
+      - enum-2
+      - enum-3
+      - enum-4
+      - enum-5
+      - enum-6
+    value:
+      test: enum-1
+      local: enum-1
+      stg: enum-6
+      prod: enum-3
+  enum-with-desc:
+    type: enum
+    enum:
+      - one
+      - two
+      - three
+      - four
+    desc: Enum example with description
+    value: one
+  datetime:
+    type: timestamp
+    value:
+      test: 2021-05-25T17:15:16-00:00
+      local: 2021-05-26T17:15:16-00:00
+      prod: 2021-06-25T17:15:16-00:00
+  enable-flag:
+    flag: enable
+    type: bool
+    value: true
+  string-slice:
+    type: stringSlice
+    value: [ 1, 2, qwerty, test, value, keys, 555 ]
+  int-slice:
+    type: intSlice
+    value:
+      test:
+        - 1
+        - 2
+        - 3
+        - -100
+        - -200
+      local: [ 1, 2, 4 ]
+  int64-slice:
+    type: int64Slice
+    value: [ -1, 0, 1, 3, 5, 10 ]
+  uint-slice:
+    type: uintSlice
+    value: [ 0, 1, 3, 5, 10 ]
+  uint64-slice:
+    type: uint64Slice
+    value: [ 0, 1, 3, 5, 10, 20000000000 ]
+  float64-slice:
+    type: float64Slice
+    value: [ 0.3, 1.3333, 3.9999, 5.55555599999, 10, 20000000000 ]

@@ -10,8 +10,8 @@ import (
 
 // Description
 const (
-Name = "{{.App.Name}}"
-Desc = "{{.App.Desc}}"
+AppName = "{{.App.Name}}"
+AppDesc = "{{.App.Desc}}"
 )
 
 // Env
@@ -85,28 +85,28 @@ return nil
 }
 
 {{range .Flags}}
-  // {{toCamel .Name}}Flag returns a *cli.{{.CLIFlagType}} for --{{.Name}} flag.
-  func {{toCamel .Name}}Flag() *cli.{{.CLIFlagType}} {
-  return &cli.{{.CLIFlagType}}{
+  // {{toCamel .Name}}Flag returns a *cli.{{.ValueType}}Flag for --{{.Name}} flag.
+  func {{toCamel .Name}}Flag() *cli.{{.ValueType}}Flag {
+  return &cli.{{.ValueType}}Flag{
   Name:        {{toCamel .Name}}FlagName,
-  Usage:       {{quote .Desc}},
+  Aliases:     {{.AliasesField}},
+  Usage:       {{quote .DescField}},
   Required:    {{.RequiredField}},
   Value:       {{toCamel .Name}}.{{.ValueType}}(),
   EnvVars:     {{.EnvVarsField $.App.Name}},
   {{ if eq .Type.String "timestamp"}}
     Action: func(_ *cli.Context, v *time.Time) error {
     if v != nil {
-    Start.SetTimestamp(Env, v.Format(time.RFC3339))
+    {{toCamel .Name}}.SetTimestamp(Env, v.Format(time.RFC3339))
     }
 
     return nil
     },
-  {{else}}
-    Action: func(_ *cli.Context, v {{.GoType}}) error {
-    {{toCamel .Name}}.{{.ValueSetMethodName}}(Env, v{{if .IsSlice}}...{{end}})
+  {{else}}Action: func(_ *cli.Context, v {{.GoType}}) error {
+  {{toCamel .Name}}.{{.ValueSetMethodName}}(Env, v{{if .IsSlice}}...{{end}})
 
-    return nil
-    },
+  return nil
+  },
   {{end}}
   }
   }
@@ -114,6 +114,7 @@ return nil
 
 func CLIFlags() []cli.Flag {
 return []cli.Flag{
+EnvFlag(),
 {{range .Flags}}{{toCamel .Name}}Flag(),
 {{end}}
 }
