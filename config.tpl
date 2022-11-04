@@ -38,11 +38,7 @@ EnvFlagName = "env"
     {{end}}
 {{end}}
 // Env should be setup the default environment name.
-var Env EnvName
-
-func init() {
-Env = GetEnvName("{{toSnake $.App.Name}}_ENV", {{range $.App.Env}}Env{{toCamel .String}},{{end}})
-}
+var Env = GetEnvName("{{toSnake $.App.Name}}_ENV", {{range $.App.Env}}Env{{toCamel .String}},{{end}})
 
 // Flag values
 var ({{range .Flags}}
