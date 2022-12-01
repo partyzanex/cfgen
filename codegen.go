@@ -16,6 +16,8 @@ type node struct {
 	*Source
 
 	PackageName string
+	SourceFile  string
+	Version     string
 }
 
 type Codegen struct {
@@ -49,6 +51,7 @@ func (g *Codegen) Run() error {
 	err = tpl.Execute(targetFile, &node{
 		Source:      source,
 		PackageName: g.PackageName,
+		SourceFile:  g.SourceFile,
 	})
 	if err != nil {
 		return errors.Wrap(err, "cannot execute config template")

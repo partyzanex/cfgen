@@ -389,7 +389,7 @@ func (flag *Flag) floatArg(env string) string {
 		panic(flag.errorf("floatArg: unsupported type %T", flag.Value))
 	}
 
-	return strconv.FormatFloat(f, 'f', -1, 64)
+	return fmt.Sprintf("float64(%s)", strconv.FormatFloat(f, 'f', -1, 64))
 }
 
 func (flag *Flag) enumArg(env string) string {
@@ -442,7 +442,7 @@ func (flag *Flag) intArg(env string) string {
 		panic(flag.errorf("intArg: unsupported type %T", flag.Value))
 	}
 
-	return strconv.FormatInt(i, 10)
+	return fmt.Sprintf("%s(%s)", flag.GoType(), strconv.FormatInt(i, 10))
 }
 
 func (flag *Flag) timestampArg(env string) string {
