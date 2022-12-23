@@ -5,7 +5,7 @@ package {{.PackageName}}
 
 import (
 "fmt"
-"time"
+{{ if hasDateTimeFlags }}"time"{{ end }}
 
 "github.com/urfave/cli/v2"
 . "github.com/partyzanex/cli-config-gen"

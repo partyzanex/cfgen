@@ -7,8 +7,11 @@ import (
 )
 
 type Value struct {
-	env  EnvName
-	raw  map[EnvName]interface{}
+	// current environment.
+	env EnvName
+	// environments map for checking if env exists and store for environment values.
+	raw map[EnvName]interface{}
+	// list of environments.
 	envs []EnvName
 }
 
@@ -227,12 +230,11 @@ func (v *Value) get() interface{} {
 		return value
 	}
 
-	n := len(v.envs)
-	if n == 0 {
+	if len(v.envs) == 0 {
 		return nil
 	}
 
-	return v.raw[v.envs[n-1]]
+	return v.raw[v.envs[0]]
 }
 
 func (v *Value) Env(env EnvName) *Value {

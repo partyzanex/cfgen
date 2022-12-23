@@ -21,14 +21,16 @@ type node struct {
 }
 
 type Codegen struct {
+	source *Source
+
 	TemplatePath string
+	PackageName  string
 	SourceFile   string
 	TargetPath   string
-	PackageName  string
 }
 
 func (g *Codegen) Run() error {
-	source, err := g.readSource()
+	err := g.readSource()
 	if err != nil {
 		return err
 	}
@@ -49,7 +51,7 @@ func (g *Codegen) Run() error {
 	}
 
 	err = tpl.Execute(targetFile, &node{
-		Source:      source,
+		Source:      g.source,
 		PackageName: g.PackageName,
 		SourceFile:  g.SourceFile,
 	})
@@ -85,9 +87,10 @@ func (g *Codegen) readTemplate() (*template.Template, error) {
 	}
 
 	tpl, err := template.New(g.PackageName).Funcs(template.FuncMap{
-		"toCamel": strcase.ToCamel,
-		"toSnake": strcase.ToScreamingSnake,
-		"quote":   strconv.Quote,
+		"toCamel":          strcase.ToCamel,
+		"toSnake":          strcase.ToScreamingSnake,
+		"quote":            strconv.Quote,
+		"hasDateTimeFlags": g.source.Flags.HasDateTimeFlags,
 	}).Parse(string(b))
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot parse template")
@@ -96,18 +99,20 @@ func (g *Codegen) readTemplate() (*template.Template, error) {
 	return tpl, nil
 }
 
-func (g *Codegen) readSource() (*Source, error) {
+func (g *Codegen) readSource() error {
 	src, err := os.Open(g.SourceFile)
 	if err != nil {
-		return nil, errors.Wrap(err, "cannot open source config file")
+		return errors.Wrap(err, "cannot open source config file")
 	}
 
 	source := new(Source)
 
 	err = yaml.NewDecoder(src).Decode(source)
 	if err != nil {
-		return nil, errors.Wrap(err, "cannot decode source file")
+		return errors.Wrap(err, "cannot decode source file")
 	}
 
-	return source, nil
+	g.source = source
+
+	return nil
 }

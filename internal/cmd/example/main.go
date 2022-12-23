@@ -1,10 +1,11 @@
 package main
 
 import (
-	"github.com/partyzanex/cli-config-gen/internal/config"
-	"github.com/urfave/cli/v2"
 	"log"
 	"os"
+
+	"github.com/partyzanex/cli-config-gen/internal/config"
+	"github.com/urfave/cli/v2"
 )
 
 func main() {

@@ -26,6 +26,18 @@ type App struct {
 
 type Flags []*Flag
 
+func (flags *Flags) HasDateTimeFlags() bool {
+	for _, flag := range *flags {
+		switch flag.Type {
+		case FlagTypeDuration, FlagTypeTimestamp:
+			return true
+		default: // nothing
+		}
+	}
+
+	return false
+}
+
 func (flags *Flags) UnmarshalYAML(node *yaml.Node) error {
 	if node.Kind != yaml.MappingNode {
 		return errors.Errorf("unsupported node kind: %d", node.Kind)

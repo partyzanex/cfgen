@@ -7,6 +7,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestValue_Int(t *testing.T) {
+	v := NewValue("test").
+		Set("test", 1).
+		Set("test2", 2)
+
+	assert.Equal(t, 1, v.Int())
+	assert.Equal(t, 2, v.Env("test2").Int())
+	assert.Equal(t, 1, v.Env("unknown").Int())
+}
+
 func TestValue_Bool(t *testing.T) {
 	v := NewValue("test").
 		Set("test", true).
@@ -14,7 +24,7 @@ func TestValue_Bool(t *testing.T) {
 
 	assert.Equal(t, true, v.Bool())
 	assert.Equal(t, false, v.Env("test2").Bool())
-	assert.Equal(t, false, v.Env("unknown").Bool())
+	assert.Equal(t, true, v.Env("unknown").Bool())
 }
 
 func TestValue_String(t *testing.T) {
@@ -26,7 +36,7 @@ func TestValue_String(t *testing.T) {
 	assert.Equal(t, "123", v.String())
 	assert.Equal(t, "321", v.Env("local").String())
 	assert.Equal(t, "test", v.Env("docker").String())
-	assert.Equal(t, "321", v.Env("unknown").String())
+	assert.Equal(t, "123", v.Env("unknown").String())
 }
 
 func TestValue_Duration(t *testing.T) {
